@@ -1,4 +1,4 @@
-const CACHE_NAME = "curva-olvido-v2";
+const CACHE_NAME = "curva-olvido-v3";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
@@ -28,10 +28,12 @@ self.addEventListener("activate", function (event) {
   self.clients.claim();
 });
 
-// Network-first: intenta traer siempre la versión más reciente de la app;
-// si no hay conexión, cae a la copia guardada en caché (modo offline).
+// Network-first, pero SOLO para los archivos propios de la app.
+// Cualquier petición a otro origen (Firebase, etc.) se deja pasar
+// directamente, sin que el service worker la intercepte ni la cachee.
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request)
